@@ -88,32 +88,27 @@ def create_app(test_config=None):
     @app.route("/questions")
     def get_questions():
 
-        try:
-            selection = Question.query.order_by(Question.id).all()
-            total_questions = len(selection)
-            current_question = paginate_questions(request, selection)
+        selection = Question.query.order_by(Question.id).all()
+        total_questions = len(selection)
+        current_question = paginate_questions(request, selection)
 
-            if len(current_question) == 0:
-                abort(404)
+        if len(current_question) == 0:
+            abort(404)
 
-            categories = Category.query.all()
-            dict = {}
+        categories = Category.query.all()
+        dict = {}
 
-            for category in categories:
-                dict[category.id] = category.type
+        for category in categories:
+            dict[category.id] = category.type
 
-            return jsonify(
-                {
-                    "success": True,
-                    "questions": current_question,
-                    "total_questions": total_questions,
-                    "categories": dict 
-                }
-            )
-        except Exception as e:
-            print(e)
-            abort(400)
-
+        return jsonify(
+            {
+                "success": True,
+                "questions": current_question,
+                "total_questions": total_questions,
+                "categories": dict 
+            }
+        )
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
