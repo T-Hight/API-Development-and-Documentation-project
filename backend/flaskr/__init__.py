@@ -22,7 +22,7 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
-    CORS(app)
+    #CORS(app)
     CORS(app, resources={"/": {"origins": "*"}})
 
     """
@@ -65,14 +65,16 @@ def create_app(test_config=None):
             dict[category.id] = category.type
 
         # abort 404 if no categories found
-        if (len(dict) == 0):
+        if len(dict) == 0:
             abort(404)
 
-        # return data to view
-        return jsonify({
+        # return jsonified data
+        return jsonify(
+            {
             'success': True,
             'categories': dict
-        })
+            }
+        )
     """
     @TODO:
     Create an endpoint to handle GET requests for questions,
@@ -87,28 +89,39 @@ def create_app(test_config=None):
     """
     @app.route("/questions")
     def get_questions():
-
-        selection = Question.query.order_by(Question.id).all()
-        total_questions = len(selection)
-        current_question = paginate_questions(request, selection)
-
-        if len(current_question) == 0:
-            abort(404)
-
-        categories = Category.query.all()
-        dict = {}
-
-        for category in categories:
-            dict[category.id] = category.type
-
-        return jsonify(
-            {
-                "success": True,
-                "questions": current_question,
-                "total_questions": total_questions,
-                "categories": dict 
-            }
-        )
+        try:
+            # get all questions
+            selection = Question.query.order_by(Question.id).all()
+            
+            # get the total number of questions
+            total_questions = len(selection)
+            
+            # get the current questions on the page
+            current_question = paginate_questions(request, selection)
+            
+            # get all categories and add to dict
+            categories = Category.query.all()
+            dict = {}
+            for category in categories:
+                dict[category.id] = category.type
+            
+            # abort 404 if no categories are found
+            if len(current_question) == 0:
+                abort(404)
+            
+            # return jsonified data
+            return jsonify(
+                {
+                    "success": True,
+                    "questions": current_question,
+                    "total_questions": total_questions,
+                    "categories": dict 
+                }
+            )
+        
+        except Exception as e:
+            print(e)
+            abort(400)
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -116,6 +129,29 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
+
+    @app.route('/questions/<int:id>', methods=['DELETE'])
+    def delete_question(id):
+        try:
+            # get specified question
+            question = Question.query.filter_by(id=id).one_or_none()
+            
+            # abort 404 if question is not found
+            if question is None:
+                abort(404)
+
+            question.delete()
+
+            return jsonify(
+                {
+                    'success': True,
+                    'deleted': question.id
+                }
+            )
+        
+        except Exception as e:
+            print(e)
+            abort(400)
 
     """
     @TODO:
