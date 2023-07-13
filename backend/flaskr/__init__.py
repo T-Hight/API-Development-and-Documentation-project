@@ -22,11 +22,16 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
-    #CORS(app)
-    CORS(app, resources={"/": {"origins": "*"}})
 
     """
     @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+    TODO: Done
+    """
+    CORS(app, resources={"/": {"origins": "*"}})
+
+
+    """
+    @TODO: Use the after_request decorator to set Access-Control-Allow
     TODO: Done
     """
     @app.after_request
@@ -40,11 +45,6 @@ def create_app(test_config=None):
         )
 
         return response
-
-    """
-    @TODO: Use the after_request decorator to set Access-Control-Allow
-    TODO: Done
-    """
 
     """
     @TODO:
@@ -112,13 +112,14 @@ def create_app(test_config=None):
             # return jsonified data
             return jsonify(
                 {
-                    "success": True,
-                    "questions": current_question,
-                    "total_questions": total_questions,
-                    "categories": dict 
+                    'success': True,
+                    'questions': current_question,
+                    'total_questions': total_questions,
+                    'categories': dict 
                 }
             )
-        
+
+        # abort 400 if exception     
         except Exception as e:
             print(e)
             abort(400)
@@ -140,8 +141,10 @@ def create_app(test_config=None):
             if question is None:
                 abort(404)
 
+            # delete specified question
             question.delete()
 
+            # return jsonified data
             return jsonify(
                 {
                     'success': True,
@@ -149,6 +152,7 @@ def create_app(test_config=None):
                 }
             )
         
+        # abort 400 if exception   
         except Exception as e:
             print(e)
             abort(400)
@@ -163,6 +167,51 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
+    @app.route('/questions', methods=['POST'])
+    def add_question():
+
+        # retrieve body 
+        body = request.get_json()
+
+        # get new data
+        new_question = body.get('question')
+        new_answer = body.get('answer')
+        new_category = body.get('category')
+        new_difficulty = body.get('difficulty')
+
+        # add new question
+        try:
+            question = Question(
+                question = new_question,
+                answer = new_answer,
+                category = new_category,
+                difficulty = new_difficulty
+            )
+
+            question.insert()
+
+            # get all questions
+            selection = Question.query.order_by(Question.id).all()
+
+            # get the current questions on the page
+            current_question = paginate_questions(request, selection)
+
+            # get the total number of questions
+            total_questions = len(selection)
+
+            # return jsonified data
+            return jsonify(
+                {
+                    'success': True,
+                    'created': question.id,
+                    'questions': current_question,
+                    'total_questions': total_questions
+                }
+            )
+        # abort 422 if exception 
+        except Exception as e:
+            print(e)
+            abort(422)
 
     """
     @TODO:
