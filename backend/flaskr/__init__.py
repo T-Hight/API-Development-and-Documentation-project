@@ -133,14 +133,12 @@ def create_app(test_config=None):
 
     @app.route('/questions/<int:id>', methods=['DELETE'])
     def delete_question(id):
-        try:
-            # get specified question
-            question = Question.query.filter_by(id=id).one_or_none()
-            
-            # abort 404 if question is not found
-            if question is None:
-                abort(404)
+        
+        # get specified question
+        question = Question.query.filter_by(id=id).one_or_none()
 
+        if question:
+            
             # delete specified question
             question.delete()
 
@@ -152,10 +150,9 @@ def create_app(test_config=None):
                 }
             )
         
-        # abort 400 if exception   
-        except Exception as e:
-            print(e)
-            abort(400)
+        # abort 404 if question cannot be deleted   
+        else:
+            abort(404)
 
     """
     @TODO:
@@ -193,7 +190,7 @@ def create_app(test_config=None):
             # get all questions
             selection = Question.query.order_by(Question.id).all()
 
-            # get the current questions on the page
+            # paginate specified selection 
             current_question = paginate_questions(request, selection)
 
             # get the total number of questions
@@ -208,6 +205,7 @@ def create_app(test_config=None):
                     'total_questions': total_questions
                 }
             )
+        
         # abort 422 if exception 
         except Exception as e:
             print(e)
@@ -224,6 +222,37 @@ def create_app(test_config=None):
     Try using the word "title" to start.
     """
 
+    @app.route('/questions/search', methods=['POST'])
+    def search_questions():
+        
+        # retrieve body 
+        body = request.get_json()
+
+        # get search term
+        search = body.get('searchTerm', None)
+
+        # Select all questions case insensitive that contain search term
+        selection = Question.query.filter(Question.question.ilike('%'+search+'%')).all()
+
+        if selection:
+
+            # paginate specified questions
+            current_questions = paginate_questions(request, selection)
+            
+            # return jsonified data
+            return jsonify(
+                {
+                    'success': True,
+                    'questions': current_questions,
+                    'total_questions': len(selection)
+                }
+            )
+        
+        # abort 404 if selection not found
+        else:
+            abort(404)
+        
+
     """
     @TODO:
     Create a GET endpoint to get questions based on category.
@@ -232,6 +261,33 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
+
+    @app.route("/categories/<int:id>/questions")
+    def questions_in_category(id):
+
+        # get category with specified id
+        category = Category.query.filter_by(id=id).one_or_none()
+        
+        if category:
+           
+            #select all questions in specified category
+            selection = Question.query.filter_by(category=id).all()
+
+            # paginate specified questions
+            current_questions = paginate_questions(request, selection)
+
+            # return jsonfied data
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'total_questions': len(selection),
+                'current_category': category.type
+            })
+        
+        # abort 404 if selection not found
+        else:
+            abort(404)
+
 
     """
     @TODO:
