@@ -89,6 +89,7 @@ def create_app(test_config=None):
     """
     @app.route("/questions")
     def get_questions():
+        
         try:
             # get all questions
             selection = Question.query.order_by(Question.id).all()
@@ -232,7 +233,8 @@ def create_app(test_config=None):
         search = body.get('searchTerm', None)
 
         # Select all questions case insensitive that contain search term
-        selection = Question.query.filter(Question.question.ilike('%'+search+'%')).all()
+        selection = Question.query.filter(
+            Question.question.ilike('%'+search+'%')).all()
 
         if selection:
 
@@ -301,11 +303,93 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     """
 
+    @app.route('/quizzes', methods=['POST'])
+    def quiz():
+        try:
+            # retrieve body
+            body = request.get_json()
+
+            # retrieve the previous question
+            previous_questions = body.get('previous_questions', None)
+
+            # retireve quiz category
+            quiz_category = body.get('quiz_category', None)
+
+            if (quiz_category['id'] == 0):
+
+                # return all questions
+                questions = Question.query.all()
+
+            else:
+            
+            # return questions filtered by category
+                questions = Question.query.filter_by(
+                    category=quiz_category['id']).all()
+
+            # generates random questions
+            def get_random_question():
+                return questions[random.randint(0, len(questions)-1)]
+
+            # get random question for next question
+            next_question = get_random_question()
+
+        # boolean
+            question_found = True
+
+            # check if question was previously asked
+            while question_found:
+
+                if next_question.id in previous_questions:
+                    next_question = get_random_question()
+                else:
+                    question_found = False
+
+            # return jsonfied data
+            return jsonify(
+                {
+                'success': True,
+                'question': next_question.format(),
+                }
+            )
+        # abort 422 if exception
+        except Exception as e:
+            print (e)
+            abort(422)
     """
     @TODO:
     Create error handlers for all expected errors
     including 404 and 422.
     """
+
+    # Error handler for Bad request
+    @app.errorhandler(400)
+    def bad_request(error):
+        data = {
+            'success': False,
+            'error': 400,
+            'message': 'bad request'
+        }
+        return jsonify(data), 400
+
+    # Error handler for resource not found
+    @app.errorhandler(404)
+    def not_found(error):
+        data = {
+            'success': False,
+            'error': 404,
+            'message': 'resource not found'
+        }
+        return jsonify(data), 404
+    
+    # Error handler for unprocesable entity
+    @app.errorhandler(422)
+    def unprocessable(error):
+        data = {
+            'success': False,
+            'error': 422,
+            'message': 'unprocessable'
+        }
+        return jsonify(data), 422
 
     return app
 
