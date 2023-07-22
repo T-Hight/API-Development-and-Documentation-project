@@ -106,6 +106,8 @@ def create_app(test_config=None):
             for category in categories:
                 dict[category.id] = category.type
             
+            current_category = category.type
+
             # abort 404 if no categories are found
             if len(current_question) == 0:
                 abort(404)
@@ -116,7 +118,8 @@ def create_app(test_config=None):
                     'success': True,
                     'questions': current_question,
                     'total_questions': total_questions,
-                    'categories': dict 
+                    'categories': dict,
+                    'current_category': current_category
                 }
             )
 
