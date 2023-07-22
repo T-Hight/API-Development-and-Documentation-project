@@ -71,13 +71,13 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
 
-### Documentation Example
+---
 
-`GET '/api/v1.0/categories'`
+`GET '/categories'`
 
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+- Retrieves a dictionary of categories
 - Request Arguments: None
-- Returns: An object with a single key, `categories`, that contains an object of `id: category_string` key: value pairs.
+- Returns: An object of the categories and their corressponding id's
 
 ```json
 {
@@ -88,6 +88,176 @@ You will need to provide detailed documentation of your API endpoints including 
   "5": "Entertainment",
   "6": "Sports"
 }
+
+---
+
+`GET '/questions`
+
+- Retrieves a paginated list of questions, and a dictionary of categories.
+- Request Arguments: None
+- Returns: An object of all the categories, the current category, an object with 10 paginated questions, the success, and the total number of questions.
+
+```json
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "current_category": "Sports",
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+  "success": true, 
+  "total_questions": 21
+}
+```
+
+---
+
+`DELETE '/questions/<int:id>'`
+
+- Deletes a question with the specified id.
+- Request Arguments: `id` - integer
+- Returns: the id of the deleted question and if the request was successful
+
+```json
+{
+  "deleted": 21,
+  "success": true
+}
+
+```
+
+---
+
+`POST '/questions'`
+
+- Sends a POST request to add a new question
+-Request Body:
+
+```json
+{
+  "question": "New question",
+  "answer": "New answer",
+  "difficulty": 1,
+  "category": 1
+}
+```
+
+- Returns: If the POST request was successful, the id of the newly created question, a paginated list of the updted questions and the total number of questions.
+
+```json
+{
+  "questions": [
+    {
+      "answer": "New answer", 
+      "category": 1, 
+      "difficulty": 1, 
+      "id": 26, 
+      "question": "New question"
+    }, 
+  "success": true, 
+  "total_questions": 22,
+  "created": 26
+}
+```
+
+---
+
+`POST '/questiions/search`
+
+- Receives a search term from user and retrieves a paginates list of questions that include the search term.
+- Request Body:  
+
+```json
+{
+  "searchTerm": "The search term"
+}
+```
+
+- Returns: A paginated list of questions that fit the searchTerm criteria.
+
+```json
+{
+  "questions": [
+    {
+      "answer": "Apollo 13",
+      "category": 5,
+      "difficulty": 4,
+      "id": 2,
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }
+  ],
+  "success": true,
+  "total_questions": 1
+}
+
+```
+
+---
+
+`GET '/categories/<int:id>/questions'`
+
+- Retrieves a paginate list of questions that correspond with the given category id.
+- Request Arguments: `id` - integer
+- Returns: The current category, a list of questions for the category, the total number of questions, and if the query was successful.
+
+```json
+
+{
+  "current_category": "Science",
+  "questions": [
+    {
+      "answer": "The Liver",
+      "category": 1,
+      "difficulty": 4,
+      "id": 20,
+      "question": "What is the heaviest organ in the human body?"
+    }
+  ],
+  "success": true,
+  "total_questions": 4
+}
+
+```
+
+---
+
+`POST '/quizzes'`
+
+- Retrieves the next question with a boolean expression
+- Request body: 
+
+```json
+{
+  "previous_questions": "previous questions",
+  "quiz_category": "quiz category"
+}
+```
+- Returns: a new, random question and whether the request was a success
+
+```json
+
+{
+  "question": {
+    "answer": "Muhammad Ali",
+    "category": 4,
+    "difficulty": 1,
+    "id": 9,
+    "question": "What boxer's original name is Cassius Clay?"
+  },
+  "success": true
+}
+
 ```
 
 ## Testing
