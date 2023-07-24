@@ -18,7 +18,7 @@ def paginate_questions(request, selection):
 
     return current_question
 
-def create_app(test_config=None):
+def create_app(db_URI="", test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
@@ -29,6 +29,10 @@ def create_app(test_config=None):
     """
     CORS(app, resources={"/": {"origins": "*"}})
 
+    if db_URI:
+        setup_db(app,db_URI)
+    else:
+        setup_db(app)
 
     """
     @TODO: Use the after_request decorator to set Access-Control-Allow
