@@ -55,30 +55,31 @@ def create_app(db_URI="", test_config=None):
     Create an endpoint to handle GET requests
     for all available categories.
     """
-    @app.route("/")
-    def index():
-        return "Hello World!"
-
 
     @app.route("/categories")
     def get_categories():
-        # get all categories and add to dict
-        categories = Category.query.all()
-        dict = {}
-        for category in categories:
-            dict[category.id] = category.type
+        
+        try:
 
-        # abort 404 if no categories found
-        if len(dict) == 0:
-            abort(404)
+            # get all categories and add to dict
+            categories = Category.query.order_by(Category.id).all()
 
-        # return jsonified data
-        return jsonify(
-            {
-            'success': True,
-            'categories': dict
-            }
-        )
+            if categories:
+                dict = {}
+                
+                for category in categories:
+                    dict[category.id] = category.type
+
+                # return jsonified data
+                return jsonify(
+                    {
+                    'categories': dict
+                    }
+            )
+        
+        except Exception as e:
+                print(e)
+                abort(404)
     """
     @TODO:
     Create an endpoint to handle GET requests for questions,
@@ -93,44 +94,36 @@ def create_app(db_URI="", test_config=None):
     """
     @app.route("/questions")
     def get_questions():
-        
-        try:
-            # get all questions
-            selection = Question.query.order_by(Question.id).all()
-            
-            # get the total number of questions
-            total_questions = len(selection)
-            
-            # get the current questions on the page
-            current_question = paginate_questions(request, selection)
-            
-            # get all categories and add to dict
-            categories = Category.query.all()
-            dict = {}
-            for category in categories:
-                dict[category.id] = category.type
-            
-            current_category = category.type
 
-            # abort 404 if no categories are found
+            # get all questions
+            questions = Question.query.order_by(Question.id).all()
+            
+            # get all categories
+            categories = Category.query.order_by(Category.id).all()
+
+            # get the current questions on the page
+            current_question = paginate_questions(request, questions)
+
             if len(current_question) == 0:
-                abort(404)
+                abort (404)
+            
+            # add all categories to a dict
+            if categories:
+                dict = {}
+                
+                for category in categories:
+                    dict[category.id] = category.type
             
             # return jsonified data
             return jsonify(
                 {
-                    'success': True,
                     'questions': current_question,
-                    'total_questions': total_questions,
+                    'total_questions': len(questions),
                     'categories': dict,
-                    'current_category': current_category
+                    'current_category': category.type
                 }
             )
 
-        # abort 400 if exception     
-        except Exception as e:
-            print(e)
-            abort(400)
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -153,7 +146,6 @@ def create_app(db_URI="", test_config=None):
             # return jsonified data
             return jsonify(
                 {
-                    'success': True,
                     'deleted': question.id
                 }
             )
@@ -179,10 +171,10 @@ def create_app(db_URI="", test_config=None):
         body = request.get_json()
 
         # get new data
-        new_question = body.get('question')
-        new_answer = body.get('answer')
-        new_category = body.get('category')
-        new_difficulty = body.get('difficulty')
+        new_question = body.get('question', None)
+        new_answer = body.get('answer', None)
+        new_category = body.get('category', None)
+        new_difficulty = body.get('difficulty', None)
 
         # add new question
         try:
@@ -207,7 +199,6 @@ def create_app(db_URI="", test_config=None):
             # return jsonified data
             return jsonify(
                 {
-                    'success': True,
                     'created': question.id,
                     'questions': current_question,
                     'total_questions': total_questions
@@ -251,7 +242,6 @@ def create_app(db_URI="", test_config=None):
             # return jsonified data
             return jsonify(
                 {
-                    'success': True,
                     'questions': current_questions,
                     'total_questions': len(selection)
                 }
@@ -287,7 +277,6 @@ def create_app(db_URI="", test_config=None):
 
             # return jsonfied data
             return jsonify({
-                'success': True,
                 'questions': current_questions,
                 'total_questions': len(selection),
                 'current_category': category.type
@@ -354,7 +343,6 @@ def create_app(db_URI="", test_config=None):
             # return jsonfied data
             return jsonify(
                 {
-                'success': True,
                 'question': next_question.format(),
                 }
             )
@@ -370,9 +358,8 @@ def create_app(db_URI="", test_config=None):
 
     # Error handler for Bad request
     @app.errorhandler(400)
-    def bad_request(error):
+    def err_bad_request(error):
         data = {
-            'success': False,
             'error': 400,
             'message': 'bad request'
         }
@@ -380,9 +367,8 @@ def create_app(db_URI="", test_config=None):
 
     # Error handler for resource not found
     @app.errorhandler(404)
-    def not_found(error):
+    def err_not_found(error):
         data = {
-            'success': False,
             'error': 404,
             'message': 'resource not found'
         }
@@ -390,9 +376,8 @@ def create_app(db_URI="", test_config=None):
     
     # Error handler for unprocesable entity
     @app.errorhandler(422)
-    def unprocessable(error):
+    def err_unprocessable(error):
         data = {
-            'success': False,
             'error': 422,
             'message': 'unprocessable'
         }
