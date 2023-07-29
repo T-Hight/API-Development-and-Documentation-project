@@ -176,39 +176,37 @@ def create_app(db_URI="", test_config=None):
         new_category = body.get('category', None)
         new_difficulty = body.get('difficulty', None)
 
-        # add new question
-        try:
-            question = Question(
-                question = new_question,
-                answer = new_answer,
-                category = new_category,
-                difficulty = new_difficulty
-            )
-
-            question.insert()
-
-            # get all questions
-            selection = Question.query.order_by(Question.id).all()
-
-            # paginate specified selection 
-            current_question = paginate_questions(request, selection)
-
-            # get the total number of questions
-            total_questions = len(selection)
-
-            # return jsonified data
-            return jsonify(
-                {
-                    'created': question.id,
-                    'questions': current_question,
-                    'total_questions': total_questions
-                }
-            )
-        
-        # abort 422 if exception 
-        except Exception as e:
-            print(e)
+        # abort 422 if conditions are not met
+        if (new_question == None) or (new_answer == None) or (new_category == None) or (new_difficulty == None):    
             abort(422)
+        
+        # add new question
+        question = Question(
+            question = new_question,
+            answer = new_answer,
+            category = new_category,
+            difficulty = new_difficulty
+        )
+        
+        question.insert()
+
+        # get all questions
+        selection = Question.query.order_by(Question.id).all()
+
+        # paginate specified selection 
+        current_question = paginate_questions(request, selection)
+
+        # get the total number of questions
+        total_questions = len(selection)
+
+        # return jsonified data
+        return jsonify(
+            {
+                'created': question.id,
+                'questions': current_question,
+                'total_questions': total_questions
+            }
+        )
 
     """
     @TODO:
@@ -261,7 +259,7 @@ def create_app(db_URI="", test_config=None):
     category to be shown.
     """
 
-    @app.route("/categories/<int:id>/questions")
+    @app.route('/categories/<int:id>/questions')
     def questions_in_category(id):
 
         # get category with specified id
