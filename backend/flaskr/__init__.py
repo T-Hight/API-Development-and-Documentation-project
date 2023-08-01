@@ -171,42 +171,43 @@ def create_app(db_URI="", test_config=None):
         body = request.get_json()
 
         # get new data
-        new_question = body.get('question', None)
-        new_answer = body.get('answer', None)
-        new_category = body.get('category', None)
-        new_difficulty = body.get('difficulty', None)
+        new_question = body.get('question')
+        new_answer = body.get('answer')
+        new_category = body.get('category')
+        new_difficulty = body.get('difficulty')
 
         # abort 422 if conditions are not met
-        if (new_question == None) or (new_answer == None) or (new_category == None) or (new_difficulty == None):    
+        if (len(new_question) == 0 or len(new_answer) == 0 or (new_category == range(7)) or (new_difficulty == range(6))):    
             abort(422)
         
-        # add new question
-        question = Question(
-            question = new_question,
-            answer = new_answer,
-            category = new_category,
-            difficulty = new_difficulty
-        )
-        
-        question.insert()
+        else:
+            # add new question
+            question = Question(
+                question = new_question,
+                answer = new_answer,
+                category = new_category,
+                difficulty = new_difficulty
+            )
+            
+            question.insert()
 
-        # get all questions
-        selection = Question.query.order_by(Question.id).all()
+            # get all questions
+            selection = Question.query.order_by(Question.id).all()
 
-        # paginate specified selection 
-        current_question = paginate_questions(request, selection)
+            # paginate specified selection 
+            current_question = paginate_questions(request, selection)
 
-        # get the total number of questions
-        total_questions = len(selection)
+            # get the total number of questions
+            total_questions = len(selection)
 
-        # return jsonified data
-        return jsonify(
-            {
-                'created': question.id,
-                'questions': current_question,
-                'total_questions': total_questions
-            }
-        )
+            # return jsonified data
+            return jsonify(
+                {
+                    'created': question.id,
+                    'questions': current_question,
+                    'total_questions': total_questions
+                }
+            )
 
     """
     @TODO:
@@ -283,7 +284,6 @@ def create_app(db_URI="", test_config=None):
         # abort 404 if selection not found
         else:
             abort(404)
-
 
     """
     @TODO:
