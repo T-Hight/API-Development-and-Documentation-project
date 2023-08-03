@@ -177,7 +177,7 @@ def create_app(db_URI="", test_config=None):
         new_difficulty = body.get('difficulty')
 
         # abort 422 if conditions are not met
-        if (len(new_question) == 0 or len(new_answer) == 0 or (new_category == range(7)) or (new_difficulty == range(6))):    
+        if ((len(new_question) == 0) or (len(new_answer) == 0) or (new_category not in range(7)) or (new_difficulty not in range(6))):    
             abort(422)
         
         else:
@@ -231,7 +231,7 @@ def create_app(db_URI="", test_config=None):
 
         # Select all questions case insensitive that contain search term
         selection = Question.query.filter(
-            Question.question.ilike('%'+search+'%')).all()
+            Question.question.ilike('%{}%'.format(search))).all()
 
         if selection:
 
@@ -266,8 +266,11 @@ def create_app(db_URI="", test_config=None):
         # get category with specified id
         category = Category.query.filter_by(id=id).one_or_none()
         
-        if category:
-           
+        # abort 404 if category not found
+        if (category is None):
+            abort (404)
+
+        else:   
             #select all questions in specified category
             selection = Question.query.filter_by(category=id).all()
 
@@ -280,10 +283,6 @@ def create_app(db_URI="", test_config=None):
                 'total_questions': len(selection),
                 'current_category': category.type
             })
-        
-        # abort 404 if selection not found
-        else:
-            abort(404)
 
     """
     @TODO:
