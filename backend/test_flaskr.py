@@ -34,7 +34,7 @@ class TriviaTestCase(unittest.TestCase):
     Write at least one test for each test for successful operation and for expected errors.
     """
 
-    new_question = {
+    a_new_question = {
         "question": "How much wood could a woodchuck chuck?",
         "answer": "Don't ask me",
         "category": 1,
@@ -43,9 +43,25 @@ class TriviaTestCase(unittest.TestCase):
     
     incomplete_question = {
         "question": "What is the square root of 5625?",
-        "answer": None,
+        "answer": "",
         "category": 1,
         "difficulty": 3
+    }
+
+    quiz_question = {
+        "previous_questions": [4],
+        "quiz_category": {
+            "type": "Science",
+            "id": "1"
+        }
+    }
+
+    no_quiz_question = {
+         "previous_questions": [4],
+        "quiz_category": {
+            "type": "",
+            "id": ""
+        }
     }
 
     def test_get_categories(self):
@@ -79,10 +95,10 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['message'], 'resource not found')
 
-    # def test_delete_question(self):
-    #     res = self.client().delete('/questions/10')
+    def test_delete_question(self):
+        res = self.client().delete('/questions/10')
 
-    #     self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
     def test_delete_question_not_found(self):
         res = self.client().delete('/questions/1000')
@@ -92,7 +108,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["message"], "resource not found")
 
     def test_new_question(self):
-        res = self.client().post('/questions', json=self.new_question)
+        res = self.client().post('/questions', json=self.a_new_question)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -137,6 +153,20 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 404)
         self.assertTrue(data["message"], "resource not found")
+
+    def test_quiz(self):
+        res = self.client().post('/quizzes', json = self.quiz_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["question"])
+
+    def test_quiz_failed(self):
+        res = self.client().post('/quizzes', json = self.no_quiz_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertTrue(data["message"], "unprocessable")
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
