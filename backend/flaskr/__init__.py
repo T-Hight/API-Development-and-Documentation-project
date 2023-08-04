@@ -136,7 +136,7 @@ def create_app(db_URI="", test_config=None):
     def delete_question(id):
         
         # get specified question
-        question = Question.query.filter_by(id=id).one_or_none()
+        question = Question.query.get(id)
 
         if question:
             
@@ -264,7 +264,7 @@ def create_app(db_URI="", test_config=None):
     def questions_in_category(id):
 
         # get category with specified id
-        category = Category.query.filter_by(id=id).one_or_none()
+        category = Category.query.filter(Category.id == id).one_or_none()
         
         # abort 404 if category not found
         if (category is None):
@@ -272,7 +272,7 @@ def create_app(db_URI="", test_config=None):
 
         else:   
             #select all questions in specified category
-            selection = Question.query.filter_by(category=id).all()
+            selection = Question.query.filter_by(category = id).all()
 
             # paginate specified questions
             current_questions = paginate_questions(request, selection)
