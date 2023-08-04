@@ -95,34 +95,34 @@ def create_app(db_URI="", test_config=None):
     @app.route("/questions")
     def get_questions():
 
-            # get all questions
-            questions = Question.query.order_by(Question.id).all()
-            
-            # get all categories
-            categories = Category.query.order_by(Category.id).all()
+        # get all questions
+        questions = Question.query.order_by(Question.id).all()
+        
+        # get all categories
+        categories = Category.query.order_by(Category.id).all()
 
-            # get the current questions on the page
-            current_question = paginate_questions(request, questions)
+        # get the current questions on the page
+        current_question = paginate_questions(request, questions)
 
-            if len(current_question) == 0:
-                abort (404)
+        if len(current_question) == 0:
+            abort (404)
+        
+        # add all categories to a dict
+        if categories:
+            dict = {}
             
-            # add all categories to a dict
-            if categories:
-                dict = {}
-                
-                for category in categories:
-                    dict[category.id] = category.type
-            
-            # return jsonified data
-            return jsonify(
-                {
-                    'questions': current_question,
-                    'total_questions': len(questions),
-                    'categories': dict,
-                    'current_category': category.type
-                }
-            )
+            for category in categories:
+                dict[category.id] = category.type
+        
+        # return jsonified data
+        return jsonify(
+            {
+                'questions': current_question,
+                'total_questions': len(questions),
+                'categories': dict,
+                'current_category': category.type
+            }
+        )
 
     """
     @TODO:
@@ -327,10 +327,9 @@ def create_app(db_URI="", test_config=None):
             # get random question for next question
             next_question = get_random_question()
 
-            # boolean
+            # check if question was previously asked with boolean
             question_found = True
 
-            # check if question was previously asked
             while question_found:
 
                 if next_question.id in previous_questions:
