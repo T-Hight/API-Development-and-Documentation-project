@@ -321,12 +321,13 @@ def create_app(db_URI="", test_config=None):
 
             # generates random questions
             def get_random_question():
-                return questions[random.randint(0, len(questions)-1)]
+                next_question = random.choice(questions)
+                return next_question
 
             # get random question for next question
             next_question = get_random_question()
 
-        # boolean
+            # boolean
             question_found = True
 
             # check if question was previously asked
